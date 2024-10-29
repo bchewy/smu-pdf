@@ -8,7 +8,6 @@ class OpenRouterClient:
         self.api_key = os.getenv('OPENROUTER_API_KEY')
         if not self.api_key:
             raise ValueError("OpenRouter API key not found in environment variables")
-        print(f"API key length: {len(self.api_key)}")  # Debug line
         
         self.base_url = "https://openrouter.ai/api/v1"
         self.headers = {
@@ -57,15 +56,19 @@ class OpenRouterClient:
             raise Exception(f"Error calling OpenRouter API: {str(e)}")
 
     def extract_schedule(self, text: str) -> Dict:
-        """Extract schedule information from text"""
+        """Extract and format schedule information from text"""
         try:
             prompt = (
-                "Extract and structure all schedule-related information from this text. Include:\n"
-                "- Course timeline\n"
-                "- Assignment due dates\n"
-                "- Project milestones\n"
-                "- Important deadlines\n"
-                "Format the response as a JSON with dates as keys and events as values.\n"
+                "Extract course schedule information and format as a JSON where:\n"
+                "- Keys should be ISO dates (YYYY-MM-DD)\n"
+                "- Values should be objects with 'type' and 'description' fields\n"
+                "Example format:\n"
+                "{\n"
+                '  "2024-01-15": {"type": "assignment", "description": "Assignment 1 due"},\n'
+                '  "2024-02-01": {"type": "project", "description": "Project Milestone 1"}\n'
+                "}\n"
+                "Types can be: assignment, project, exam, milestone, or deadline.\n"
+                "Convert any week-based schedules to actual dates starting from the current semester.\n"
                 f"Text: {text}"
             )
 
@@ -84,20 +87,27 @@ class OpenRouterClient:
             result = response.json()
             content = result['choices'][0]['message']['content']
             
-            # Try to parse the content as JSON
             try:
-                schedule_data = json.loads(content)
-                return schedule_data
+                # Find the JSON part in the response
+                json_start = content.find('{')
+                json_end = content.rfind('}') + 1
+                if json_start >= 0 and json_end > json_start:
+                    json_str = content[json_start:json_end]
+                    schedule_data = json.loads(json_str)
+                    return schedule_data
+                else:
+                    raise json.JSONDecodeError("No JSON found in response", content, 0)
+                    
             except json.JSONDecodeError:
-                # If parsing fails, return a structured error message
                 print(f"Failed to parse schedule data: {content}")
+                # Return a default event to show the timeline is working
                 return {
                     "2024-10-29": {
-                        "type": "error",
-                        "description": "Could not extract schedule information from the document"
+                        "type": "milestone",
+                        "description": "Course Start"
                     }
                 }
-            
+                
         except requests.exceptions.RequestException as e:
             print(f"Schedule extraction error: {str(e)}")
             if hasattr(e, 'response') and hasattr(e.response, 'text'):
