@@ -9,6 +9,8 @@ class OpenRouterClient:
         self.base_url = "https://openrouter.ai/api/v1"
         self.headers = {
             "Authorization": f"Bearer {self.api_key}",
+            "HTTP-Referer": "http://localhost:5000",
+            "X-Title": "Academic PDF Summarizer",
             "Content-Type": "application/json"
         }
 
