@@ -9,20 +9,25 @@ class Visualizer:
     @staticmethod
     def create_structure_chart(sections: List[Dict]) -> go.Figure:
         """Create a treemap visualization of the document structure"""
-        df = pd.DataFrame(sections)
+        labels = [section['title'] for section in sections]
+        parents = [''] * len(sections)
+        values = [len(section['content'].split()) for section in sections]
+        colors = ['#FF4B4B' if section.get('type') == 'important' else '#1f77b4' 
+                 for section in sections]
         
         fig = go.Figure(go.Treemap(
-            labels=[section['title'] for section in sections],
-            parents=[''] * len(sections),
-            values=[len(section['content'].split()) for section in sections],
+            labels=labels,
+            parents=parents,
+            values=values,
             textinfo="label+value",
+            marker=dict(colors=colors),
             hovertemplate="<b>%{label}</b><br>Words: %{value}<extra></extra>"
         ))
         
         fig.update_layout(
             width=800,
             height=500,
-            title="Document Structure Overview",
+            title="Document Structure Overview<br><sup>Red sections indicate important notices</sup>",
         )
         
         return fig
@@ -32,6 +37,8 @@ class Visualizer:
         """Create a bar chart showing section lengths"""
         titles = [section['title'] for section in sections]
         lengths = [len(section['content'].split()) for section in sections]
+        colors = ['#FF4B4B' if section.get('type') == 'important' else '#1f77b4' 
+                 for section in sections]
         
         fig = go.Figure(data=[
             go.Bar(
@@ -39,6 +46,7 @@ class Visualizer:
                 y=lengths,
                 text=lengths,
                 textposition='auto',
+                marker_color=colors
             )
         ])
         
@@ -58,7 +66,6 @@ class Visualizer:
         frequencies = list(word_freq.values())
         max_freq = max(frequencies)
         
-        # Calculate sizes and positions
         sizes = [((f / max_freq) * 50) + 10 for f in frequencies]
         x_pos = np.random.rand(len(words)) * 100
         y_pos = np.random.rand(len(words)) * 100
@@ -92,11 +99,9 @@ class Visualizer:
     @staticmethod
     def create_word_cloud(text: str) -> go.Figure:
         """Generate word frequency and create word cloud"""
-        # Clean and tokenize text
         words = [word.lower() for word in text.split() 
                 if len(word) > 3 and word.isalnum()]
         word_freq = Counter(words)
-        # Take top 50 words
         word_freq = Counter(dict(word_freq.most_common(50)))
         return Visualizer.word_cloud_visualization(word_freq)
 
@@ -144,25 +149,39 @@ class Visualizer:
     def extract_learning_objectives(sections: List[Dict]) -> List[Dict]:
         """Extract learning objectives from sections"""
         objectives = []
+        objective_keywords = ['will', 'should', 'learn', 'understand', 'able to', 'demonstrate']
+        
         for section in sections:
+            # Check both title and content for learning objectives
             if any(keyword in section['title'].lower() 
-                  for keyword in ['objective', 'goal', 'learn', 'outcome']):
+                   for keyword in ['objective', 'goal', 'learn', 'outcome']):
                 content = section['content']
-                sentences = content.split('.')
+                sentences = [s.strip() for s in content.split('.') if s.strip()]
+                
                 for sentence in sentences:
-                    if any(keyword in sentence.lower() 
-                          for keyword in ['will', 'should', 'learn', 'understand']):
+                    if any(keyword in sentence.lower() for keyword in objective_keywords):
                         objectives.append({
                             'objective': sentence.strip(),
-                            'progress': np.random.randint(0, 100)  # Simulated progress
+                            'category': 'Primary',
+                            'progress': np.random.randint(50, 100)  # Simulated progress
                         })
+            else:
+                # Check content for implicit learning objectives
+                sentences = [s.strip() for s in section['content'].split('.') if s.strip()]
+                for sentence in sentences:
+                    if any(keyword in sentence.lower() for keyword in objective_keywords):
+                        objectives.append({
+                            'objective': sentence.strip(),
+                            'category': 'Secondary',
+                            'progress': np.random.randint(0, 50)  # Simulated progress
+                        })
+        
         return objectives
 
     @staticmethod
     def objectives_progress_chart(objectives: List[Dict]) -> go.Figure:
         """Create a progress visualization for learning objectives"""
         if not objectives:
-            # Create empty chart with message if no objectives found
             fig = go.Figure()
             fig.add_annotation(
                 text="No learning objectives detected in the document",
@@ -170,22 +189,32 @@ class Visualizer:
                 x=0.5, y=0.5, showarrow=False
             )
             return fig
-            
-        fig = go.Figure(go.Bar(
-            x=[obj['progress'] for obj in objectives],
-            y=[obj['objective'][:100] + '...' if len(obj['objective']) > 100 
-               else obj['objective'] for obj in objectives],
-            orientation='h',
-            marker_color='rgb(55, 83, 109)'
-        ))
+        
+        colors = {'Primary': '#2ecc71', 'Secondary': '#3498db'}
+        
+        fig = go.Figure()
+        
+        for category in ['Primary', 'Secondary']:
+            cat_objectives = [obj for obj in objectives if obj['category'] == category]
+            if cat_objectives:
+                fig.add_trace(go.Bar(
+                    x=[obj['progress'] for obj in cat_objectives],
+                    y=[obj['objective'][:80] + '...' if len(obj['objective']) > 80 
+                       else obj['objective'] for obj in cat_objectives],
+                    orientation='h',
+                    name=category,
+                    marker_color=colors[category],
+                    hovertemplate="<b>%{y}</b><br>Progress: %{x}%<extra></extra>"
+                ))
         
         fig.update_layout(
             title="Learning Objectives Progress",
             xaxis_title="Progress (%)",
             yaxis_title="Objectives",
-            height=max(400, len(objectives) * 50),
-            showlegend=False,
-            xaxis=dict(range=[0, 100])
+            height=max(400, len(objectives) * 40),
+            showlegend=True,
+            xaxis=dict(range=[0, 100]),
+            barmode='group'
         )
         
         return fig

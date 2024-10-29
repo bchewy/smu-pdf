@@ -23,11 +23,18 @@ class PDFProcessor:
         current_text = []
         
         for line in text.split('\n'):
-            if line.strip().isupper() or line.strip().startswith('#'):
+            # Check for important notice markers
+            is_important = any(keyword in line.lower() for keyword in 
+                ['important', 'notice', 'warning', 'attention', 'note'])
+            
+            if line.strip().isupper() or line.strip().startswith('#') or is_important:
                 if current_section:
                     sections.append({
                         'title': current_section,
-                        'content': ' '.join(current_text)
+                        'content': ' '.join(current_text),
+                        'type': 'important' if any(keyword in current_section.lower() 
+                               for keyword in ['important', 'notice', 'warning', 'attention', 'note']) 
+                               else 'regular'
                     })
                 current_section = line.strip()
                 current_text = []
@@ -37,7 +44,10 @@ class PDFProcessor:
         if current_section:
             sections.append({
                 'title': current_section,
-                'content': ' '.join(current_text)
+                'content': ' '.join(current_text),
+                'type': 'important' if any(keyword in current_section.lower() 
+                       for keyword in ['important', 'notice', 'warning', 'attention', 'note']) 
+                       else 'regular'
             })
         
         return sections
