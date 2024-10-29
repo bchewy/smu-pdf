@@ -45,10 +45,6 @@ class OpenRouterClient:
             )
             
             response.raise_for_status()
-            print(f"Response status: {response.status_code}")
-            print(f"Response headers: {response.headers}")
-            print(f"Response body: {response.text}")
-            
             result = response.json()
             return {
                 "Summary": result['choices'][0]['message']['content']
@@ -80,14 +76,27 @@ class OpenRouterClient:
                     "model": "google/gemini-flash-1.5",
                     "messages": [{"role": "user", "content": prompt}],
                     "temperature": 0.3,
-                    "max_tokens": 1000,
-                    "response_format": {"type": "json_object"}
+                    "max_tokens": 1000
                 }
             )
             
             response.raise_for_status()
             result = response.json()
-            return result['choices'][0]['message']['content']
+            content = result['choices'][0]['message']['content']
+            
+            # Try to parse the content as JSON
+            try:
+                schedule_data = json.loads(content)
+                return schedule_data
+            except json.JSONDecodeError:
+                # If parsing fails, return a structured error message
+                print(f"Failed to parse schedule data: {content}")
+                return {
+                    "2024-10-29": {
+                        "type": "error",
+                        "description": "Could not extract schedule information from the document"
+                    }
+                }
             
         except requests.exceptions.RequestException as e:
             print(f"Schedule extraction error: {str(e)}")
