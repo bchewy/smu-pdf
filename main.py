@@ -41,11 +41,12 @@ def main():
                 
                 # Create visualizations using tabs
                 visualizer = Visualizer()
-                tab1, tab2, tab3, tab4 = st.tabs([
+                tab1, tab2, tab3, tab4, tab5 = st.tabs([
                     "Document Structure", 
                     "Word Cloud", 
                     "Readability", 
-                    "Learning Objectives"
+                    "Learning Objectives",
+                    "Schedule Timeline"
                 ])
 
                 with tab1:
@@ -78,6 +79,19 @@ def main():
                         visualizer.create_objectives_tracker(sections),
                         use_container_width=True
                     )
+
+                with tab5:
+                    st.subheader("Course Schedule")
+                    openrouter_client = OpenRouterClient()
+                    schedule_data = openrouter_client.extract_schedule(text_content)
+                    
+                    if schedule_data:
+                        st.plotly_chart(
+                            visualizer.create_schedule_timeline(schedule_data),
+                            use_container_width=True
+                        )
+                    else:
+                        st.info("No schedule information found in the document.")
                 
                 # Generate summary
                 openrouter_client = OpenRouterClient()

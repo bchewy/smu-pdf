@@ -59,3 +59,38 @@ class OpenRouterClient:
             if hasattr(e, 'response') and hasattr(e.response, 'text'):
                 print(f"Error response: {e.response.text}")
             raise Exception(f"Error calling OpenRouter API: {str(e)}")
+
+    def extract_schedule(self, text: str) -> Dict:
+        """Extract schedule information from text"""
+        try:
+            prompt = (
+                "Extract and structure all schedule-related information from this text. Include:\n"
+                "- Course timeline\n"
+                "- Assignment due dates\n"
+                "- Project milestones\n"
+                "- Important deadlines\n"
+                "Format the response as a JSON with dates as keys and events as values.\n"
+                f"Text: {text}"
+            )
+
+            response = requests.post(
+                f"{self.base_url}/chat/completions",
+                headers=self.headers,
+                json={
+                    "model": "google/gemini-flash-1.5",
+                    "messages": [{"role": "user", "content": prompt}],
+                    "temperature": 0.3,
+                    "max_tokens": 1000,
+                    "response_format": {"type": "json_object"}
+                }
+            )
+            
+            response.raise_for_status()
+            result = response.json()
+            return result['choices'][0]['message']['content']
+            
+        except requests.exceptions.RequestException as e:
+            print(f"Schedule extraction error: {str(e)}")
+            if hasattr(e, 'response') and hasattr(e.response, 'text'):
+                print(f"Error response: {e.response.text}")
+            raise Exception(f"Error extracting schedule: {str(e)}")

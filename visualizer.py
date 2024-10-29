@@ -4,6 +4,7 @@ from typing import List, Dict
 from collections import Counter
 import textstat
 import numpy as np
+from datetime import datetime
 
 class Visualizer:
     @staticmethod
@@ -152,7 +153,6 @@ class Visualizer:
         objective_keywords = ['will', 'should', 'learn', 'understand', 'able to', 'demonstrate']
         
         for section in sections:
-            # Check both title and content for learning objectives
             if any(keyword in section['title'].lower() 
                    for keyword in ['objective', 'goal', 'learn', 'outcome']):
                 content = section['content']
@@ -163,17 +163,16 @@ class Visualizer:
                         objectives.append({
                             'objective': sentence.strip(),
                             'category': 'Primary',
-                            'progress': np.random.randint(50, 100)  # Simulated progress
+                            'progress': np.random.randint(50, 100)
                         })
             else:
-                # Check content for implicit learning objectives
                 sentences = [s.strip() for s in section['content'].split('.') if s.strip()]
                 for sentence in sentences:
                     if any(keyword in sentence.lower() for keyword in objective_keywords):
                         objectives.append({
                             'objective': sentence.strip(),
                             'category': 'Secondary',
-                            'progress': np.random.randint(0, 50)  # Simulated progress
+                            'progress': np.random.randint(0, 50)
                         })
         
         return objectives
@@ -224,3 +223,71 @@ class Visualizer:
         """Extract learning objectives and create progress visualization"""
         objectives = Visualizer.extract_learning_objectives(sections)
         return Visualizer.objectives_progress_chart(objectives)
+
+    @staticmethod
+    def create_schedule_timeline(schedule_data: Dict) -> go.Figure:
+        """Create an interactive timeline visualization"""
+        dates = []
+        events = []
+        categories = []
+        colors = {
+            'assignment': '#FF4B4B',
+            'project': '#2ecc71',
+            'exam': '#e74c3c',
+            'milestone': '#3498db',
+            'deadline': '#f1c40f'
+        }
+
+        for date_str, event_info in schedule_data.items():
+            try:
+                date = datetime.strptime(date_str, "%Y-%m-%d")
+                event_type = event_info.get('type', 'deadline').lower()
+                event_desc = event_info.get('description', 'Event')
+                
+                dates.append(date)
+                events.append(event_desc)
+                categories.append(event_type)
+            except ValueError:
+                continue
+
+        fig = go.Figure()
+
+        for category in colors.keys():
+            mask = [c == category for c in categories]
+            if any(mask):
+                fig.add_trace(go.Scatter(
+                    x=[d for i, d in enumerate(dates) if mask[i]],
+                    y=[1 for _ in range(sum(mask))],
+                    mode='markers+text',
+                    name=category.title(),
+                    text=[e for i, e in enumerate(events) if mask[i]],
+                    marker=dict(
+                        size=15,
+                        color=colors[category],
+                        symbol='diamond'
+                    ),
+                    textposition='top center',
+                    hovertemplate="<b>%{text}</b><br>Date: %{x}<extra></extra>"
+                ))
+
+        fig.update_layout(
+            title="Course Schedule Timeline",
+            showlegend=True,
+            xaxis=dict(
+                title="Date",
+                showgrid=True,
+                gridcolor='rgba(169,169,169,0.2)',
+                tickangle=45
+            ),
+            yaxis=dict(
+                showgrid=False,
+                zeroline=False,
+                showticklabels=False,
+                range=[0, 2]
+            ),
+            height=400,
+            hovermode='closest',
+            plot_bgcolor='white'
+        )
+
+        return fig
