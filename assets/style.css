@@ -1,0 +1,22 @@
+.main-header {
+    text-align: center;
+    padding: 1rem;
+}
+
+.summary-container {
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    background-color: #f8f9fa;
+    margin: 1rem 0;
+}
+
+.download-button {
+    margin-top: 1rem;
+}
+
+.error-message {
+    color: #dc3545;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    margin: 0.5rem 0;
+}
