@@ -65,7 +65,7 @@ class Visualizer:
         """Create a scatter plot word cloud visualization"""
         words = list(word_freq.keys())
         frequencies = list(word_freq.values())
-        max_freq = max(frequencies)
+        max_freq = max(frequencies) if frequencies else 1
         
         sizes = [((f / max_freq) * 50) + 10 for f in frequencies]
         x_pos = np.random.rand(len(words)) * 100
@@ -139,11 +139,19 @@ class Visualizer:
     @staticmethod
     def create_readability_chart(text: str) -> go.Figure:
         """Calculate various readability scores"""
-        metrics = {
-            'Flesch Reading Ease': textstat.flesch_reading_ease(text),
-            'Gunning Fog': min(100, textstat.gunning_fog(text) * 10),
-            'SMOG Index': min(100, textstat.smog_index(text) * 10)
-        }
+        if not text.strip():
+            metrics = {
+                'Flesch Reading Ease': 0,
+                'Grade Level': 0,
+                'Text Standard': 0
+            }
+        else:
+            grade_level = textstat.flesch_kincaid_grade(text)
+            metrics = {
+                'Flesch Reading Ease': min(100, textstat.flesch_reading_ease(text)),
+                'Grade Level': min(100, grade_level * 10),
+                'Text Standard': min(100, textstat.dale_chall_readability_score(text))
+            }
         return Visualizer.readability_gauge_chart(metrics)
 
     @staticmethod
@@ -176,6 +184,12 @@ class Visualizer:
                         })
         
         return objectives
+
+    @staticmethod
+    def create_objectives_tracker(sections: List[Dict]) -> go.Figure:
+        """Extract learning objectives and create progress visualization"""
+        objectives = Visualizer.extract_learning_objectives(sections)
+        return Visualizer.objectives_progress_chart(objectives)
 
     @staticmethod
     def objectives_progress_chart(objectives: List[Dict]) -> go.Figure:
@@ -219,75 +233,70 @@ class Visualizer:
         return fig
 
     @staticmethod
-    def create_objectives_tracker(sections: List[Dict]) -> go.Figure:
-        """Extract learning objectives and create progress visualization"""
-        objectives = Visualizer.extract_learning_objectives(sections)
-        return Visualizer.objectives_progress_chart(objectives)
-
-    @staticmethod
     def create_schedule_timeline(schedule_data: Dict) -> go.Figure:
-        """Create an interactive timeline visualization"""
-        dates = []
-        events = []
-        categories = []
-        colors = {
-            'assignment': '#FF4B4B',
-            'project': '#2ecc71',
-            'exam': '#e74c3c',
-            'milestone': '#3498db',
-            'deadline': '#f1c40f'
-        }
-
-        for date_str, event_info in schedule_data.items():
-            try:
-                date = datetime.strptime(date_str, "%Y-%m-%d")
-                event_type = event_info.get('type', 'deadline').lower()
-                event_desc = event_info.get('description', 'Event')
-                
-                dates.append(date)
-                events.append(event_desc)
-                categories.append(event_type)
-            except ValueError:
-                continue
-
+        """Create a timeline visualization of the course schedule"""
         fig = go.Figure()
+        
+        if not schedule_data:
+            fig.add_annotation(
+                text="No schedule data available",
+                xref="paper", yref="paper",
+                x=0.5, y=0.5, showarrow=False
+            )
+            return fig
+            
+        if 'milestones' in schedule_data:
+            milestone_y_position = 3
+            x_position = list(range(len(schedule_data['milestones'])))
+            
+            fig.add_trace(go.Scatter(
+                x=x_position,
+                y=[milestone_y_position] * len(schedule_data['milestones']),
+                mode='markers+text',
+                name='Milestones',
+                text=[f"<b>{item['description']}</b>" for item in schedule_data['milestones']],
+                textposition='top center',
+                textfont=dict(size=12),
+                marker=dict(size=15, color='#3498db', symbol='diamond')
+            ))
 
-        for category in colors.keys():
-            mask = [c == category for c in categories]
-            if any(mask):
+        if 'weekly_plan' in schedule_data:
+            weekly_plan_y_position = 1
+            for i, week_data in enumerate(schedule_data['weekly_plan']):
                 fig.add_trace(go.Scatter(
-                    x=[d for i, d in enumerate(dates) if mask[i]],
-                    y=[1 for _ in range(sum(mask))],
+                    x=[week_data['week'] - 1],
+                    y=[weekly_plan_y_position],
                     mode='markers+text',
-                    name=category.title(),
-                    text=[e for i, e in enumerate(events) if mask[i]],
+                    name=f"Week {week_data['week']}",
+                    text=f"<b>Week {week_data['week']}</b><br>{week_data['topic']}",
+                    textposition='bottom center',
+                    textfont=dict(size=10),
                     marker=dict(
-                        size=15,
-                        color=colors[category],
-                        symbol='diamond'
+                        size=12,
+                        color=['#2ecc71' if i % 2 == 0 else '#27ae60'][0]
                     ),
-                    textposition='top center',
-                    hovertemplate="<b>%{text}</b><br>Date: %{x}<extra></extra>"
+                    showlegend=False,
+                    hovertext=f"Activities:<br>- " + "<br>- ".join(week_data['activities'])
                 ))
 
         fig.update_layout(
-            title="Course Schedule Timeline",
+            title="Course Timeline",
             showlegend=True,
             xaxis=dict(
-                title="Date",
+                title="Course Progress",
                 showgrid=True,
                 gridcolor='rgba(169,169,169,0.2)',
-                tickangle=45
+                tickangle=0
             ),
             yaxis=dict(
                 showgrid=False,
                 zeroline=False,
                 showticklabels=False,
-                range=[0, 2]
+                range=[0, 4]
             ),
-            height=400,
+            height=500,
             hovermode='closest',
             plot_bgcolor='white'
         )
-
+        
         return fig

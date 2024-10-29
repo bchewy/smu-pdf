@@ -1,22 +1,48 @@
-.main-header {
-    text-align: center;
+/* Basic styling for better readability */
+.stProgress > div > div {
+    background-color: #3b82f6;
+}
+
+.stProgress {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+/* Status message styling */
+[data-testid="stText"] {
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+/* Error message styling */
+[data-testid="stAlert"] {
     padding: 1rem;
-}
-
-.summary-container {
-    padding: 1.5rem;
+    margin-bottom: 1rem;
     border-radius: 0.5rem;
-    background-color: #f8f9fa;
-    margin: 1rem 0;
 }
 
-.download-button {
-    margin-top: 1rem;
-}
+/* Add to existing styles */
 
-.error-message {
-    color: #dc3545;
+/* Sidebar styling */
+.sidebar .stSelectbox {
+    background-color: white;
+    border-radius: 0.5rem;
     padding: 0.5rem;
-    border-radius: 0.25rem;
-    margin: 0.5rem 0;
+    margin-bottom: 1rem;
+}
+
+/* Model selector help text */
+.sidebar [data-testid="stMarkdownContainer"] {
+    font-size: 0.875rem;
+    color: #666;
+    margin-top: 0.25rem;
+}
+
+/* Model options description */
+.model-info {
+    font-size: 0.875rem;
+    padding: 0.5rem;
+    background-color: #f8f9fa;
+    border-radius: 0.5rem;
+    margin-top: 0.5rem;
 }
