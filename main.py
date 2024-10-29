@@ -1,9 +1,12 @@
+from dotenv import load_dotenv
 import streamlit as st
 import pandas as pd
 from pdf_processor import PDFProcessor
 from openrouter_client import OpenRouterClient
 from visualizer import Visualizer
 from utils import create_download_link, format_summary, validate_pdf_file
+
+load_dotenv()  # Load environment variables from .env file
 
 def load_css():
     with open("assets/style.css") as f:
