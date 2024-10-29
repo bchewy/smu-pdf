@@ -5,6 +5,8 @@ from pdf_processor import PDFProcessor
 from openrouter_client import OpenRouterClient
 from visualizer import Visualizer
 from utils import create_download_link, format_summary, validate_pdf_file
+from collections import Counter
+import textstat
 
 load_dotenv()  # Load environment variables from .env file
 
@@ -37,19 +39,43 @@ def main():
                 text_content = pdf_processor.extract_text(uploaded_file)
                 sections = pdf_processor.get_structure(text_content)
                 
-                # Create visualizations
+                # Create visualizations using tabs
                 visualizer = Visualizer()
-                col1, col2 = st.columns(2)
-                
-                with col1:
+                tab1, tab2, tab3, tab4 = st.tabs([
+                    "Document Structure", 
+                    "Word Cloud", 
+                    "Readability", 
+                    "Learning Objectives"
+                ])
+
+                with tab1:
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.plotly_chart(
+                            visualizer.create_structure_chart(sections),
+                            use_container_width=True
+                        )
+                    with col2:
+                        st.plotly_chart(
+                            visualizer.create_length_chart(sections),
+                            use_container_width=True
+                        )
+
+                with tab2:
                     st.plotly_chart(
-                        visualizer.create_structure_chart(sections),
+                        visualizer.create_word_cloud(text_content),
                         use_container_width=True
                     )
-                
-                with col2:
+
+                with tab3:
                     st.plotly_chart(
-                        visualizer.create_length_chart(sections),
+                        visualizer.create_readability_chart(text_content),
+                        use_container_width=True
+                    )
+
+                with tab4:
+                    st.plotly_chart(
+                        visualizer.create_objectives_tracker(sections),
                         use_container_width=True
                     )
                 

@@ -707,6 +707,15 @@ wheels = [
 ]
 
 [[package]]
+name = "pyphen"
+version = "0.17.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/66/46/3dd0ae4b52016496069af6c4fca3b5918b0281fc92678f739edb8f3eb377/pyphen-0.17.0.tar.gz", hash = "sha256:1d13acd1ce37a384d7612954ae6c7801bb4c5316da0e2b937b2127ba702a3da4", size = 2072773 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/eb/ae/7919394672be4884ac8434e30be143db689b29b6e7fa0dd8eb2037af0337/pyphen-0.17.0-py3-none-any.whl", hash = "sha256:dad0b2e4aa80f6d70bf06711b2da36c47a756b933c1d0c4cbbab40f643a5958c", size = 2073297 },
+]
+
+[[package]]
 name = "python-dateutil"
 version = "2.9.0.post0"
 source = { registry = "https://pypi.org/simple" }
@@ -759,6 +768,7 @@ dependencies = [
     { name = "pypdf2" },
     { name = "python-dotenv" },
     { name = "streamlit" },
+    { name = "textstat" },
 ]
 
 [package.metadata]
@@ -768,6 +778,7 @@ requires-dist = [
     { name = "pypdf2", specifier = ">=3.0.1" },
     { name = "python-dotenv", specifier = ">=1.0.1" },
     { name = "streamlit", specifier = ">=1.39.0" },
+    { name = "textstat", specifier = ">=0.7.4" },
 ]
 
 [[package]]
@@ -846,6 +857,15 @@ wheels = [
 ]
 
 [[package]]
+name = "setuptools"
+version = "75.3.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ed/22/a438e0caa4576f8c383fa4d35f1cc01655a46c75be358960d815bfbb12bd/setuptools-75.3.0.tar.gz", hash = "sha256:fba5dd4d766e97be1b1681d98712680ae8f2f26d7881245f2ce9e40714f1a686", size = 1351577 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/90/12/282ee9bce8b58130cb762fbc9beabd531549952cac11fc56add11dcb7ea0/setuptools-75.3.0-py3-none-any.whl", hash = "sha256:f2504966861356aa38616760c0f66568e535562374995367b4e69c7143cf6bcd", size = 1251070 },
+]
+
+[[package]]
 name = "six"
 version = "1.16.0"
 source = { registry = "https://pypi.org/simple" }
@@ -909,6 +929,18 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/cd/94/91fccdb4b8110642462e653d5dcb27e7b674742ad68efd146367da7bdb10/tenacity-9.0.0.tar.gz", hash = "sha256:807f37ca97d62aa361264d497b0e31e92b8027044942bfa756160d908320d73b", size = 47421 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b6/cb/b86984bed139586d01532a587464b5805f12e397594f19f931c4c2fbfa61/tenacity-9.0.0-py3-none-any.whl", hash = "sha256:93de0c98785b27fcf659856aa9f54bfbd399e29969b0621bc7f762bd441b4539", size = 28169 },
+]
+
+[[package]]
+name = "textstat"
+version = "0.7.4"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pyphen" },
+    { name = "setuptools" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/11/df/bb284dfb23890319ace2a416a5a39e77e29b8f52f5d80bc13b12dc1fc1f5/textstat-0.7.4-py3-none-any.whl", hash = "sha256:53a36cbcf4d21312d28cdc5a316917031667a57303e375a184d83fd52b95a407", size = 105138 },
 ]
 
 [[package]]
