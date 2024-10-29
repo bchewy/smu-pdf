@@ -22,13 +22,15 @@ class OpenRouterClient:
         """Generate summary using OpenRouter Gemini Flash model"""
         try:
             prompt = (
-                "Please analyze and summarize the following academic text. "
-                "Provide a structured summary including: \n"
-                "1. Main Findings\n"
-                "2. Key Concepts\n"
-                "3. Methodology\n"
-                "4. Conclusions\n\n"
-                f"Text: {text}"
+                "As an enthusiastic teaching assistant, create an engaging and student-friendly summary of this academic text. "
+                "Make it fun and relatable while maintaining accuracy. Include: \n\n"
+                "1. 🎯 TL;DR (A quick, catchy overview)\n"
+                "2. 🌟 Key Highlights (with real-world analogies)\n"
+                "3. 💡 Pro Tips (practical study advice)\n"
+                "4. 🎮 Fun Facts & Applications\n"
+                "5. 📊 Visual Summary (describe any charts or graphs in an engaging way)\n\n"
+                "Use emojis, casual language, and relatable examples. Make it feel like a friendly study guide rather than a formal summary. "
+                f"Here's the text to analyze: {text}"
             )
 
             response = requests.post(
